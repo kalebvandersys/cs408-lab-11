@@ -7,53 +7,142 @@
     <title>Test AWS Lambda</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <h1>My Simple Inventory App <button style="padding: 5px 35px;" id="load-data">Load All Items</button></h1>
-    <p id="lambda-info">
-        <!-- loaded with AJAX -->
-    </p>
-    <script>
-        document.getElementById("load-data").onclick = function () {
-            let lambda = document.getElementById("lambda-info");
-            let xhr = new XMLHttpRequest();
-            xhr.addEventListener("load", function () {
-                lambda.innerHTML = xhr.response;
-            });
-            xhr.open("GET", "https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items");
-            xhr.send();
-        }
+<h1>My Simple Inventory App
+    <button style="padding: 5px 35px;" id="load-data">Load All Items</button>
+</h1>
+<p id="lambda-info">
+    <!-- loaded with AJAX -->
+</p>
+<script>
+    // Function to load and display items in a table
+    function loadTable() {
+        let lambda = document.getElementById("lambda-info");
+        let xhr = new XMLHttpRequest();
 
-    </script>
+        xhr.onload = function () {
+            try {
+                let items = JSON.parse(xhr.responseText);
 
-    <hr>
-    <button id="send-data">Add Item</button>
-    <p>Sends an example JSON object to the server with id 11111</p>
-    <script>
-        document.getElementById("send-data").onclick = function () {
-            let xhr = new XMLHttpRequest();
-            xhr.open("PUT", "https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send(JSON.stringify({
-                "id": "11111",
-                "price": 19,
-                "name": "test put value"
-            }));
-        }
-    </script>
+                let tableHTML = `
+                <table border="1" cellpadding="8" cellspacing="0"
+                       style="border-collapse: collapse; width: 80%; margin-top: 20px;">
+                    <tr style="background-color: #f2f2f2;">
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+            `;
 
-    <button id="delete-data">Delete Data</button>
-    <p>Deletes a JSON object from the server with 11111</p>
-    <script>
-        document.getElementById("delete-data").onclick = function () {
-            let xhr = new XMLHttpRequest();
-            xhr.open("DELETE", "https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items/11111");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send();
-        }
-    </script>
+                items.forEach(item => {
+                    tableHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.price}</td>
+                        <td>
+                            <button onclick="deleteItem('${item.id}')"
+                                    style="padding: 3px 8px; background-color: red; color: white; border: none; border-radius: 4px;">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                });
+
+                tableHTML += `</table>`;
+                lambda.innerHTML = tableHTML;
+
+            } catch (err) {
+                lambda.innerHTML = `<p style="color: red;">Error loading data.</p>`;
+                console.error(err);
+            }
+        };
+
+        xhr.open("GET", "https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items");
+        xhr.send();
+    }
+
+    document.getElementById("load-data").onclick = loadTable;
+    function deleteItem(itemId) {
+        if (!confirm(`Are you sure you want to delete item ${itemId}?`)) return;
+
+        let xhr = new XMLHttpRequest();
+        xhr.open("DELETE", `https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items/${itemId}`);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onload = function() {
+            if(xhr.status >= 200 && xhr.status < 300) {
+                loadTable(); // Refresh table after deletion
+            } else {
+                alert("Error deleting item: " + xhr.responseText);
+            }
+        };
+
+        xhr.send();
+    }
+</script>
+
+<hr>
+<div style="border: 2px solid #000; padding: 15px; width: 300px; height: 250px; border-radius: 8px; margin: auto;">
+    <h2>Add New Item to Database</h2>
+    <table style="padding-bottom: 20px;">
+        <tr>
+            <td><label style="padding: 5px 35px;" for="id">ID:</label></td>
+            <td><input style="padding: 5px 5px;" type="text" id="id" name="name" placeholder="Placeholder"></td>
+        </tr>
+        <tr>
+            <td><label style="padding: 5px 35px;" for="name">Name:</label></td>
+            <td><input style="padding: 5px 5px;" type="text" id="name" name="name" placeholder="Placeholder"></td>
+        </tr>
+        <tr>
+            <td><label style="padding: 15px 35px;" for="price">Price:</label></td>
+            <td><input style="padding: 5px 5px;" type="text" id="price" name="price" placeholder="Placeholder"></td>
+        </tr>
+    </table>
+
+    <button id="send-data" style="float: right; padding: 5px 20px">Add Item</button>
+</div>
+<script>
+    document.getElementById("send-data").onclick = function () {
+        // Get values from input fields
+        const idValue = document.getElementById("id").value;
+        const nameValue = document.getElementById("name").value;
+        const priceValue = document.getElementById("price").value;
+
+        // Create JSON object
+        const data = {
+            "id": idValue,
+            "name": nameValue,
+            "price": parseFloat(priceValue) // convert to number if needed
+        };
+        let xhr = new XMLHttpRequest();
+        xhr.open("PUT", "https://93p45v1gi1.execute-api.us-east-2.amazonaws.com/items");
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onload = function() {
+            if(xhr.status >= 200 && xhr.status < 300) {
+                // Refresh the table after successful add
+                loadTable();
+
+                // Clear input fields
+                document.getElementById("id").value = "";
+                document.getElementById("name").value = "";
+                document.getElementById("price").value = "";
+            } else {
+                alert("Error adding item: " + xhr.responseText);
+            }
+        };
+
+        xhr.send(JSON.stringify(data));
+    };
+</script>
+
+
 </body>
 
 </html>
