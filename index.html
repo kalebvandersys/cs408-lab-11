@@ -12,7 +12,7 @@
 
 <body>
 <h1>My Simple Inventory App
-    <button style="padding: 5px 35px;" id="load-data">Load All Items</button>
+    <button style="padding: 5px 35px; background: brown;" id="load-data">Load All Items</button>
 </h1>
 <p id="lambda-info">
     <!-- loaded with AJAX -->
@@ -30,7 +30,7 @@
                 let tableHTML = `
                 <table border="1" cellpadding="8" cellspacing="0"
                        style="border-collapse: collapse; width: 80%; margin-top: 20px;">
-                    <tr style="background-color: #f2f2f2;">
+                    <tr style="background-color: lightsalmon;">
                         <th>ID</th>
                         <th>Name</th>
                         <th>Price</th>
@@ -105,7 +105,7 @@
         </tr>
     </table>
 
-    <button id="send-data" style="float: right; padding: 5px 20px">Add Item</button>
+    <button id="send-data" style="float: right; background: brown; padding: 5px 20px">Add Item</button>
 </div>
 <script>
     document.getElementById("send-data").onclick = function () {

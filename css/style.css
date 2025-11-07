@@ -2,3 +2,6 @@
      padding-top: 10px;
      padding-bottom: 5px; /* optional for bottom spacing */
  }
+ body{
+     background-color: green;
+ }
