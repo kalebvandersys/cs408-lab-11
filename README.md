@@ -11,3 +11,4 @@ You can either use the live preview on VS code, the preview on IntelliJ or follo
 ## Sources and Credits
 
 - Help with table: ChatGPT
+- Assistance with making the database refresh with each action: ChatGPT
